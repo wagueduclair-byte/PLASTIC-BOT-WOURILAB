@@ -202,12 +202,6 @@
       []
     ],
     [
-      "oled:VCC",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
       "oled:GND",
       "esp:GND.1",
       "black",
@@ -295,6 +289,12 @@
       "buzz:1",
       "esp:GND.1",
       "black",
+      []
+    ],
+    [
+      "oled:VCC",
+      "esp:VIN",
+      "red",
       []
     ]
   ]
