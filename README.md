@@ -1,47 +1,38 @@
 # PLASTIC-BOT WOURILAB
+### Poubelle intelligente à trois entrées avec scanner et tri automatique
 
-Prototype de poubelle intelligente qui contrôle l'ouverture après reconnaissance d'un déchet plastique, oriente le déchet vers un compartiment et mesure sa masse.
+Le système identifie un déchet avant le dépôt et n'ouvre que l'entrée correspondant à sa catégorie.
 
-## Documents principaux
+## Trois catégories
+1. **Organiques / biodégradables** : restes alimentaires, épluchures, feuilles.
+2. **Recyclables** : bouteilles et emballages plastiques, papier, carton et canettes.
+3. **Résiduels / non recyclables** : déchets souillés ou non valorisables dans les deux autres filières.
 
-- **[CAHIER DES CHARGES COMPLET](CAHIER_DES_CHARGES.md)** — fonctionnement détaillé, architecture, composants illustrés, fabrication, sécurité, tests et budget.
-- [Galerie photos des composants](PHOTOS_COMPOSANTS.md) — photographies de référence des modules et pièces.
-- [Budget détaillé](docs/BUDGET.md) — nomenclature et estimation prévisionnelle en FCFA.
-- [Cahier des charges dans docs](docs/CAHIER_DES_CHARGES.md).
+## Fonctionnement
+1. Le PIR détecte l'utilisateur, sans commander d'ouverture.
+2. L'utilisateur présente un objet dans la zone de scan.
+3. La caméra capture l'image.
+4. Le modèle IA retourne organic, recyclable, residual ou unknown.
+5. Le contrôleur valide la catégorie et le score.
+6. Un seul des trois servomoteurs ouvre l'entrée correspondante.
+7. En cas de doute ou de panne, les trois entrées restent fermées.
 
-## Fonctionnement essentiel
+## Documents
+- [Cahier des charges](CAHIER_DES_CHARGES.md)
+- [Budget prévisionnel](docs/BUDGET.md)
+- [Nomenclature matérielle](hardware/BOM.md)
+- [Photos de référence](PHOTOS_COMPOSANTS.md)
+- [Firmware ESP32](firmware/esp32/README.md)
+- [Firmware ESP32-CAM](firmware/esp32-cam/README.md)
+- [Simulation Wokwi](simulation/wokwi/README.md)
+- [Démonstration interactive](simulation/demo/README.md)
+- [Plan de tests](tests/PLAN_DE_TESTS.md)
 
-1. Détection de l'utilisateur : le système passe en mode présentation, sans ouvrir.
-2. Détection de l'objet présenté.
-3. Capture par ESP32-CAM et classification par un modèle IA entraîné.
-4. Objet non reconnu ou non autorisé : refus, couvercle fermé.
-5. Plastique accepté : validation par ESP32, ouverture motorisée, orientation vers le bac.
-6. Mesure du poids et affichage.
-
-**La présence humaine seule ne déclenche jamais l'ouverture.** En cas de doute, de panne caméra ou de perte de communication, le système reste fermé.
-
-## État du projet
-
-Le dépôt contient la documentation de conception et les bases logicielles. Le modèle IA doit être entraîné et évalué ; les plans mécaniques cotés, le brochage final et les photographies du prototype réellement fabriqué seront ajoutés après validation et assemblage. Les photos dans la galerie sont des références de composants, pas des preuves d'achat.
+## État réel
+L'ESP32 DevKit V1 est déjà possédé. Le module ESP32-CAM, les trois servomoteurs et les matériaux sont à vérifier. Le modèle IA à trois classes doit être entraîné, intégré et évalué. Une simulation par boutons ne constitue pas une reconnaissance réelle.
 
 ## Budget
+Le budget de la version trois entrées est provisoire et doit être confirmé par des devis locaux. Voir docs/BUDGET.md.
 
-Le budget prévisionnel révisé est de **111 595 FCFA**, réserve de 10 % incluse, avec ESP32 DevKit V1 déjà possédé et non à racheter. Les montants doivent être confirmés par devis avant les achats.
-
-## Code et simulation
-
-- [Firmware ESP32 DevKit V1](firmware/esp32/README.md) — code complet, brochage et mise en service.
-- [Firmware ESP32-CAM](firmware/esp32-cam/README.md) — serveur HTTP de décision; modèle IA à entraîner avant activation.
-- [Simulation Wokwi complète](simulation/wokwi/README.md) — diagramme, programme et bibliothèques.
-
-## Démonstration visuelle
-
-- **[Ouvrir la démonstration interactive en ligne](https://wagueduclair-byte.github.io/PLASTIC-BOT-WOURILAB/)** — site web animé avec couvercle, trappe, détection, décision et écran OLED simulés.
-- [Code source de la démonstration](site/index.html).
-- [Animation HTML d'origine](simulation/demo/index.html).
-- [Écrans OLED de référence](simulation/demo/captures/ecran-oled-etapes.svg).
-- [Acceptation et refus](simulation/demo/captures/acceptation-refus.svg).
-
-Le déploiement du site est automatisé par GitHub Actions. **À faire une seule fois dans GitHub :** ouvrir *Settings → Pages*, puis choisir **GitHub Actions** comme source de publication. Le lien ci-dessus sera accessible après la fin du premier déploiement.
-
-**Important :** cette page est une démonstration visuelle interactive, pas une capture vidéo réelle de Wokwi. Le circuit Wokwi et le modèle IA doivent encore être exécutés et validés séparément.
+## Démonstration et publication
+La démonstration web est une animation pédagogique. Wokwi teste uniquement les composants pris en charge par le simulateur. Pour GitHub Pages, ouvrir Settings → Pages → Build and deployment et choisir GitHub Actions. Le site n'est publié qu'après réussite du workflow.
