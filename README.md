@@ -1,5 +1,11 @@
 # PLASTIC-BOT-WOURILAB
 
+## Documents principaux
+- [CAHIER DES CHARGES](CAHIER_DES_CHARGES.md) — version complète à la racine.
+- [Budget prévisionnel](docs/BUDGET.md)
+- [Cahier des charges détaillé](docs/CAHIER_DES_CHARGES.md)
+
+
 Prototype de poubelle intelligente qui n'accepte que les déchets plastiques.
 
 ## Principe de fonctionnement
