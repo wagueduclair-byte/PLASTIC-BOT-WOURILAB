@@ -1,23 +1,24 @@
-# Nomenclature matérielle (BOM)
+# Nomenclature prévisionnelle
+Les quantités sont indicatives. Vérifier les références, dimensions et prix avant commande.
 
-| Élément | Fonction | État |
-|---|---|---|
-| ESP32 DevKit V1 | Contrôle principal | Déjà possédé |
-| ESP32-CAM AI Thinker | Image de l'objet | À acheter / vérifier |
-| HC-SR04 | Distance de présentation | À acheter |
-| Capteur IR | Détection complémentaire | À acheter |
-| Servo SG90 | Couvercle de maquette | À acheter; couple à vérifier |
-| OLED I2C | Affichage | À acheter |
-| Buzzer + LEDs | Signalisation | À acheter |
-| HX711 + cellule 5 kg | Mesure de poids / remplissage expérimental | Option de mesure |
-| Carte LoRa DevKit | Télémétrie | Référence à confirmer |
-| Alimentation 5 V régulée | Alimentation des modules | À dimensionner |
-| Convertisseur DC-DC | Adaptation d'alimentation | À vérifier |
-| Bac, MDF/acrylique, charnières | Structure | À fabriquer / acheter |
+| Élément | Qté indicative | Fonction | État |
+|---|---:|---|---|
+| ESP32 DevKit V1 | 1 | Contrôle principal | Déclaré disponible |
+| ESP32-CAM + adaptateur USB-série | 1 | Capture d'image | À acquérir/confirmer |
+| Capteur de proximité HC-SR04 ou ToF | 1 | Détection | À confirmer |
+| Servomoteur à couple adapté | 1 à 2 | Orientation/retention | À dimensionner |
+| Alimentation régulée moteurs | 1 | Puissance servos | À dimensionner |
+| Régulateur logique | 1 | Alimentation stable | À confirmer |
+| OLED I2C | 1 facultatif | Affichage | À confirmer |
+| Bouton d'arrêt/validation | 1 à 2 | Sécurité et essais | À prévoir |
+| Grand bac extérieur | 1 | Châssis | À fabriquer/acheter |
+| Mini-bacs intérieurs | 3 | Collecte séparée | À fabriquer/acheter |
+| Goulotte, axe et supports | 1 ensemble | Répartition | À fabriquer |
+| Câbles, borniers, visserie, protections | 1 lot | Assemblage | À prévoir |
 
-## Notes de câblage
-- HC-SR04 : TRIG vers une sortie ESP32; ECHO via diviseur de tension vers une entrée ESP32.
-- OLED : bus I2C; vérifier l'adresse et les broches de la carte choisie.
-- Servo : alimentation 5 V séparée adaptée, masse commune avec ESP32, signal sur GPIO.
-- ESP32-CAM : alimentation stable; les pointes de courant peuvent provoquer des redémarrages.
-- LoRa : ne pas câbler avant confirmation du modèle et de sa tension logique.
+## Dimensionnement
+- Le couple servo dépend du poids et du bras de levier de la goulotte.
+- Ne pas alimenter les servos depuis le 3,3 V de l'ESP32.
+- HC-SR04 ECHO est généralement en 5 V : adapter le niveau avant GPIO ESP32.
+- Pour peser les trois bacs séparément : trois cellules de charge et trois HX711. Une seule cellule mesure uniquement le poids à son emplacement.
+- Les capteurs de remplissage sont une option ultérieure.
