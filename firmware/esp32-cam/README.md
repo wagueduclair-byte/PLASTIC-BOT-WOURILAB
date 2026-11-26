@@ -1,18 +1,26 @@
-# ESP32-CAM — intégration vision
+# ESP32-CAM AI Thinker — serveur de décision
 
-Cette première version définit le contrat d'intégration. Elle ne contient pas encore de modèle de classification entraîné.
+Ce dossier contient le programme de base du module caméra.
 
-## Contrat HTTP attendu par le contrôleur
-L'ESP32 principal appelle `GET /decision`. Le service doit renvoyer :
-- `200 application/json` et `{"accepted":true}` si l'objet est reconnu comme plastique autorisé.
-- `200 application/json` et `{"accepted":false}` si l'objet est refusé.
-- Toute erreur, timeout ou réponse invalide est interprétée comme un refus par le contrôleur.
+## Contrat avec l'ESP32 principal
+L'ESP32 principal appelle `GET http://IP_DE_LA_CAMERA/decision`.
 
-## Étapes à réaliser
-1. Configurer la caméra AI Thinker et vérifier la capture.
-2. Créer un jeu d'images étiquetées (plastiques acceptés / autres déchets).
-3. Entraîner ou intégrer un modèle léger compatible avec la mémoire disponible, ou déléguer l'inférence à un service local.
-4. Mesurer la précision et les faux positifs sur des objets réels, éclairages et angles variés.
-5. Ne retourner `accepted:true` qu'au-dessus d'un seuil de confiance validé expérimentalement.
+Réponse attendue :
+```json
+{"accepted":true,"confidence":0.93,"reason":"PLASTIC_CONFIRMED"}
+```
+Le contrôleur principal n'accepte que `accepted=true` ET une confiance d'au moins 0,80. Toute erreur, réponse invalide ou perte Wi-Fi entraîne un refus.
 
-La caméra seule ne reconnaît pas automatiquement le plastique. Ne pas utiliser le prototype pour une collecte réelle avant validation du modèle.
+## État actuel — limitation importante
+Le fichier `camera_server.ino` initialise la caméra AI Thinker, capture une image et expose l'endpoint HTTP. Le classifieur est volontairement en mode sûr : il renvoie toujours `accepted=false` avec `MODEL_NOT_INSTALLED`. Le modèle IA n'a pas encore été entraîné ni validé. Il serait dangereux de prétendre que la caméra reconnaît déjà les plastiques.
+
+## Mise en service
+1. Installer le cœur ESP32 dans Arduino IDE.
+2. Sélectionner AI Thinker ESP32-CAM et renseigner le Wi-Fi.
+3. Téléverser `camera_server.ino`.
+4. Relever l'adresse IP affichée dans le moniteur série.
+5. Reporter cette adresse dans `CAMERA_DECISION_URL` du firmware principal.
+6. Entraîner et intégrer un classifieur plastique / non-plastique dans `classifyPlastic()`.
+7. Tester les faux positifs et faux négatifs avant d'autoriser `accepted=true`.
+
+Ne pas alimenter l'ESP32-CAM depuis la sortie 3,3 V de l'ESP32 principal. Prévoir une alimentation stable adaptée au module.
