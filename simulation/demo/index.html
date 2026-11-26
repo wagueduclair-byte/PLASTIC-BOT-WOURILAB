@@ -1,63 +1,47 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PLASTIC-BOT WOURILAB — Démonstration animée</title>
+<title>PLASTIC-BOT WOURILAB — Poubelle intelligente à trois entrées</title>
 <style>
-:root{color-scheme:dark;font-family:Inter,system-ui,Arial,sans-serif;background:#07111f;color:#e8f0fa}
-*{box-sizing:border-box}body{margin:0;padding:24px;background:radial-gradient(circle at 20% 0%,#12304a,#07111f 55%)}
-main{max-width:1100px;margin:auto}h1{font-size:clamp(25px,4vw,42px);margin:0 0 8px}.sub{color:#a8bbd0;margin:0 0 24px}
-.layout{display:grid;grid-template-columns:1.3fr .8fr;gap:18px}.panel{background:#0c1b2c;border:1px solid #24415d;border-radius:18px;padding:18px;box-shadow:0 15px 40px #0005}
-.scene{min-height:460px;position:relative;overflow:hidden;background:linear-gradient(#0b2436,#081421);border-radius:14px;border:1px solid #31506c}
-.bin{position:absolute;left:36%;bottom:52px;width:245px;height:270px;border:5px solid #7e9aaf;border-top:0;border-radius:8px 8px 22px 22px;background:linear-gradient(90deg,#24445a,#102a3e);box-shadow:inset 0 0 25px #0008}
-.bin:before{content:"";position:absolute;top:-20px;left:-12px;width:260px;height:18px;border-radius:6px;background:#9bb2c3;transform-origin:12px 50%;transition:transform .7s}
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#07111f;color:#e8f0fa}
+*{box-sizing:border-box}body{margin:0;padding:22px;background:radial-gradient(circle at 20% 0%,#12304a,#07111f 60%)}
+main{max-width:1050px;margin:auto}h1{font-size:clamp(25px,4vw,40px);margin:0 0 8px}.sub{color:#a8bbd0;margin:0 0 22px}
+.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.panel{background:#0c1b2c;border:1px solid #24415d;border-radius:16px;padding:18px}
+.scene{min-height:390px;position:relative;overflow:hidden;background:linear-gradient(#0b2436,#081421);border-radius:12px;border:1px solid #31506c}
+.scanner{position:absolute;left:50%;top:24px;transform:translateX(-50%);padding:12px 18px;border:2px solid #51c8bd;border-radius:12px;color:#9dfff0;background:#0a2630;font-weight:800}
+.bins{position:absolute;left:7%;right:7%;bottom:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bin{height:205px;border:3px solid #7997aa;border-top:0;border-radius:5px 5px 15px 15px;background:linear-gradient(90deg,#24445a,#102a3e);position:relative;text-align:center;padding-top:75px;font-weight:800}
+.bin:before{content:"";position:absolute;top:-12px;left:-5px;right:-5px;height:12px;background:#a9bfcc;border-radius:5px;transform-origin:8px 50%;transition:transform .45s}
 .bin.open:before{transform:rotate(-48deg)}
-.bin:after{content:"PLASTIC-BOT";position:absolute;top:105px;left:0;right:0;text-align:center;font-weight:800;letter-spacing:2px;color:#b9d5e8}
-.chamber{position:absolute;left:50%;top:50%;width:2px;height:105px;background:#d2a75c;transform-origin:top;transition:transform .6s}
-.chamber.sort{transform:rotate(30deg)}
-.object{position:absolute;left:calc(50% - 12px);top:52px;width:24px;height:56px;border:3px solid #8bd7ff;border-radius:7px 7px 5px 5px;background:linear-gradient(90deg,#3184a8,#b7edff,#28728e);opacity:0;transition:all .7s}
-.object.show{opacity:1;top:190px}
-.person{position:absolute;left:9%;bottom:60px;width:52px;height:130px;opacity:.85}
-.person:before{content:"";position:absolute;top:0;left:11px;width:30px;height:30px;border-radius:50%;background:#9fb3c5}
-.person:after{content:"";position:absolute;top:34px;left:4px;width:44px;height:92px;border-radius:18px 18px 5px 5px;background:#46627c}
-.radar{position:absolute;left:7%;bottom:180px;width:120px;height:120px;border:2px solid #42c7a5;border-radius:50%;opacity:.3;animation:pulse 2s infinite}
-@keyframes pulse{50%{transform:scale(1.3);opacity:.05}}
-.labels{position:absolute;left:14px;top:14px;display:flex;gap:8px;flex-wrap:wrap}.tag{font-size:12px;border:1px solid #42627d;border-radius:99px;padding:5px 9px;color:#bdd2e4;background:#0b1a29}
-.lcd{background:#06170e;color:#7dff9c;border:5px solid #60798b;border-radius:10px;padding:15px;font:700 15px/1.7 ui-monospace,monospace;min-height:108px;box-shadow:inset 0 0 20px #1a7d3a55}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.stat{background:#10263a;border-radius:10px;padding:10px}.stat small{display:block;color:#9bb2c8}.stat b{font-size:17px}
-button{border:0;border-radius:10px;padding:12px 16px;background:#25a879;color:#03140f;font-weight:800;cursor:pointer;margin:6px 6px 0 0}button.secondary{background:#27445e;color:#e8f0fa}
-ol{padding-left:22px;color:#bed0df;line-height:1.7}.status{color:#8fe3bd;font-weight:700}.foot{color:#8da5bb;font-size:12px;line-height:1.6;margin-top:18px}
-@media(max-width:800px){.layout{grid-template-columns:1fr}.scene{min-height:390px}.bin{left:34%;transform:scale(.82);transform-origin:bottom left}}
+.bin small{display:block;color:#a9c3d5;font-weight:500;margin-top:8px}
+.bin.org{border-color:#64bd82}.bin.rec{border-color:#53b9d9}.bin.res{border-color:#d69a60}
+.labels{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}.tag{font-size:11px;border:1px solid #42627d;border-radius:99px;padding:5px 8px;color:#bdd2e4;background:#0b1a29}
+.lcd{background:#06170e;color:#7dff9c;border:4px solid #60798b;border-radius:10px;padding:14px;font:700 14px/1.7 ui-monospace,monospace;min-height:95px}
+button{border:0;border-radius:9px;padding:11px 12px;background:#25a879;color:#03140f;font-weight:800;cursor:pointer;margin:7px 5px 0 0}
+button.org{background:#64bd82}button.rec{background:#53b9d9}button.res{background:#d69a60}button.secondary{background:#27445e;color:#e8f0fa}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.stat{background:#10263a;border-radius:9px;padding:10px}.stat small{display:block;color:#9bb2c8}.stat b{font-size:15px}
+.foot{color:#8da5bb;font-size:12px;line-height:1.6;margin-top:15px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.bin{height:165px;padding-top:65px;font-size:12px}.bins{left:3%;right:3%;gap:6px}}
 </style></head>
 <body><main>
-<h1>PLASTIC-BOT WOURILAB</h1><p class="sub">Démonstration animée du cycle de tri — logique de commande du prototype</p>
+<h1>PLASTIC-BOT WOURILAB</h1><p class="sub">Poubelle intelligente à trois entrées — démonstration pédagogique du tri par catégorie</p>
 <div class="layout">
-<section class="panel"><div class="scene" id="scene">
-<div class="labels"><span class="tag">ESP32 DevKit V1</span><span class="tag">PIR + HC-SR04</span><span class="tag">ESP32-CAM / IA</span></div>
-<div class="radar" id="radar"></div><div class="person"></div><div class="object" id="object"></div>
-<div class="bin" id="bin"><div class="chamber" id="chamber"></div></div>
-</div>
-<div><button id="next">Étape suivante ▶</button><button class="secondary" id="auto">▶ Lecture automatique</button><button class="secondary" id="reset">↺ Recommencer</button></div>
+<section class="panel">
+<div class="scene">
+<div class="labels"><span class="tag">ESP32</span><span class="tag">Scanner ESP32-CAM / IA</span><span class="tag">3 servomoteurs</span></div>
+<div class="scanner">ZONE DE SCAN<br><small>Présentation du déchet</small></div>
+<div class="bins">
+<div class="bin org" id="org">ORGANIQUES<small>Entrée 1</small></div>
+<div class="bin rec" id="rec">RECYCLABLES<small>Entrée 2</small></div>
+<div class="bin res" id="res">RÉSIDUELS<small>Entrée 3</small></div>
+</div></div>
+<p><button class="org" onclick="test('organic')">Simuler organique</button><button class="rec" onclick="test('recyclable')">Simuler recyclable</button><button class="res" onclick="test('residual')">Simuler résiduel</button><button class="secondary" onclick="test('unknown')">Simuler inconnu</button><button class="secondary" onclick="resetBins()">Réinitialiser</button></p>
 </section>
 <aside class="panel">
-<h2 style="margin-top:0">Écran OLED / LCD simulé</h2><div class="lcd" id="lcd">PLASTIC-BOT WOURILAB<br>En attente...<br>Approchez-vous</div>
-<div class="stats"><div class="stat"><small>État</small><b id="state">ATTENTE</b></div><div class="stat"><small>Distance objet</small><b id="distance">— cm</b></div><div class="stat"><small>Décision IA</small><b id="decision">En attente</b></div><div class="stat"><small>Poids affiché</small><b id="weight">— g</b></div></div>
-<h3>Déroulement</h3><ol id="steps"><li>Présence humaine détectée</li><li>Objet présenté devant le capteur</li><li>Analyse par la caméra</li><li>Acceptation ou refus</li><li>Ouverture, tri et pesée si accepté</li></ol>
-<p class="foot">Cette page est une animation pédagogique créée à partir de la logique du projet. Elle n'est pas une capture vidéo de Wokwi et ne remplace pas l'exécution du circuit Wokwi. La vraie classification IA reste à entraîner et à valider.</p>
+<h2 style="margin-top:0">Écran OLED simulé</h2><div class="lcd" id="lcd">PLASTIC-BOT WOURILAB<br>En attente...<br>Présentez un déchet</div>
+<div class="stats"><div class="stat"><small>État</small><b id="state">ATTENTE</b></div><div class="stat"><small>Catégorie</small><b id="category">Aucune</b></div><div class="stat"><small>Entrées ouvertes</small><b id="opened">0</b></div><div class="stat"><small>Décision</small><b id="decision">En attente</b></div></div>
+<p class="foot">Cette page est une simulation visuelle. Les boutons représentent artificiellement la réponse du classifieur ; ils ne réalisent pas de reconnaissance par caméra. Le modèle IA à trois catégories doit encore être entraîné, intégré et testé sur le prototype réel. En cas de doute ou de panne, aucune entrée ne s'ouvre.</p>
 </aside></div></main>
 <script>
-const scenes=[
-{state:"ATTENTE",lcd:["PLASTIC-BOT WOURILAB","En attente...","Approchez-vous"],dist:"— cm",decision:"En attente",weight:"— g",person:false,obj:false,open:false,sort:false,active:0},
-{state:"PRESENCE",lcd:["UTILISATEUR DETECTE","Zone active","Presentez un objet"],dist:"— cm",decision:"Non sollicitée",weight:"— g",person:true,obj:false,open:false,sort:false,active:1},
-{state:"OBJET DETECTE",lcd:["OBJET DETECTE","Distance : 12 cm","Analyse en cours..."],dist:"12 cm",decision:"Analyse...",weight:"— g",person:true,obj:true,open:false,sort:false,active:2},
-{state:"ANALYSE IA",lcd:["CAMERA ESP32-CAM","Classification IA","Veuillez patienter"],dist:"12 cm",decision:"Plastique confirmé",weight:"— g",person:true,obj:true,open:false,sort:false,active:3},
-{state:"ACCEPTE",lcd:["PLASTIQUE ACCEPTE","Ouverture du couvercle","Tri en cours..."],dist:"12 cm",decision:"ACCEPTE ✓",weight:"— g",person:true,obj:true,open:true,sort:true,active:4},
-{state:"PESEE",lcd:["DEPOT ENREGISTRE","Poids : 125 g","Merci !"],dist:"12 cm",decision:"ACCEPTE ✓",weight:"125 g",person:true,obj:false,open:false,sort:false,active:5},
-{state:"REFUS (TEST)",lcd:["OBJET REFUSE","Classification négative","Couvercle fermé"],dist:"12 cm",decision:"REFUS ✕",weight:"— g",person:true,obj:true,open:false,sort:false,active:3}
-];
-let index=0,timer=null;
-function render(){const s=scenes[index];document.getElementById("lcd").innerHTML=s.lcd.join("<br>");document.getElementById("state").textContent=s.state;document.getElementById("distance").textContent=s.dist;document.getElementById("decision").textContent=s.decision;document.getElementById("weight").textContent=s.weight;document.getElementById("bin").classList.toggle("open",s.open);document.getElementById("chamber").classList.toggle("sort",s.sort);document.getElementById("object").classList.toggle("show",s.obj);document.getElementById("radar").style.opacity=s.person?".7":".3";document.querySelectorAll("#steps li").forEach((li,i)=>{li.style.color=i===s.active?"#7dffbd":"#bed0df";li.style.fontWeight=i===s.active?"800":"400"});}
-function stop(){if(timer){clearInterval(timer);timer=null}document.getElementById("auto").textContent="▶ Lecture automatique"}
-document.getElementById("next").onclick=()=>{stop();index=(index+1)%scenes.length;render()};
-document.getElementById("reset").onclick=()=>{stop();index=0;render()};
-document.getElementById("auto").onclick=()=>{if(timer){stop();return}document.getElementById("auto").textContent="Ⅱ Pause";timer=setInterval(()=>{index=(index+1)%6;render()},1900)};
-render();
+function resetBins(){['org','rec','res'].forEach(id=>document.getElementById(id).classList.remove('open'));document.getElementById('lcd').innerHTML='PLASTIC-BOT WOURILAB<br>En attente...<br>Présentez un déchet';document.getElementById('state').textContent='ATTENTE';document.getElementById('category').textContent='Aucune';document.getElementById('opened').textContent='0';document.getElementById('decision').textContent='En attente'}
+function test(c){resetBins();const map={organic:['org','DÉCHET ORGANIQUE','Entrée 1 autorisée'],recyclable:['rec','DÉCHET RECYCLABLE','Entrée 2 autorisée'],residual:['res','DÉCHET RÉSIDUEL','Entrée 3 autorisée']};if(!map[c]){document.getElementById('lcd').innerHTML='OBJET NON IDENTIFIÉ<br>Aucune entrée ouverte<br>Veuillez réessayer';document.getElementById('state').textContent='REFUS';document.getElementById('category').textContent='Inconnue';document.getElementById('decision').textContent='REFUS';return}const [id,label,msg]=map[c];document.getElementById(id).classList.add('open');document.getElementById('lcd').innerHTML=label+'<br>'+msg+'<br>Fermeture après dépôt';document.getElementById('state').textContent='ACCEPTÉ';document.getElementById('category').textContent=label;document.getElementById('opened').textContent='1';document.getElementById('decision').textContent='OUVERTURE CIBLÉE'}
 </script></body></html>

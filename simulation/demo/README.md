@@ -1,16 +1,7 @@
-# Démonstration visuelle — PLASTIC-BOT WOURILAB
+# Démonstration visuelle — version trois entrées
 
-## Ouvrir la démonstration animée
-Télécharger `index.html` puis l'ouvrir dans un navigateur (Chrome sur téléphone ou ordinateur). Les boutons permettent de passer les étapes ou de lancer la lecture automatique.
+Ouvrir index.html dans un navigateur. Les boutons permettent de simuler une classification organique, recyclable, résiduelle ou inconnue.
 
-Cette page présente une **animation pédagogique du comportement attendu** : présence, objet, décision caméra, ouverture, volet de tri et pesée. Elle n'est pas un enregistrement d'écran Wokwi.
+Cette page est une animation pédagogique de la logique attendue. Les boutons ne réalisent pas une reconnaissance par caméra et ne remplacent pas l'essai du circuit Wokwi ou du matériel réel.
 
-## Captures de référence
-- `captures/ecran-oled-etapes.svg` : écrans successifs prévus pour l'OLED.
-- Les captures réelles de Wokwi seront ajoutées après lancement et vérification du circuit dans le simulateur.
-
-## Simulation Wokwi
-Voir le dossier `../wokwi` pour `diagram.json`, `sketch.ino` et `libraries.txt`.
-
-## Transparence
-La vraie classification IA de l'ESP32-CAM n'est pas encore intégrée. La simulation Wokwi remplace temporairement cette décision par un bouton de test. L'animation HTML est une aide visuelle, pas une preuve de validation matérielle.
+La reconnaissance IA doit encore être entraînée, intégrée et validée sur un jeu de test indépendant.

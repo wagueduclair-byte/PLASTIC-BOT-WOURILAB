@@ -1,14 +1,11 @@
 /*
- * PLASTIC-BOT WOURILAB — ESP32 DevKit V1 (firmware matériel)
- * Chaîne : présence humaine -> objet présenté -> décision ESP32-CAM
- * -> ouverture du couvercle -> orientation -> pesée -> affichage.
- *
- * SECURITE : PIR seul n'ouvre JAMAIS le couvercle.
- * Toute erreur caméra / Wi-Fi / JSON = REFUS.
+ * PLASTIC-BOT WOURILAB — ESP32, version trois entrées.
+ * API caméra attendue : {"category":"organic","confidence":0.93}
+ * Catégories autorisées : organic, recyclable, residual.
+ * Toute erreur / unknown / confiance faible = trois clapets fermés.
  *
  * Bibliothèques : ESP32Servo, Adafruit GFX, Adafruit SSD1306,
- * HX711 (Bogdan Necula), ArduinoJson.
- * Adapter les broches et CAMERA_DECISION_URL au montage réel.
+ * HX711 (optionnel), ArduinoJson.
  */
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -19,246 +16,111 @@
 #include "HX711.h"
 #include <ESP32Servo.h>
 
-// ---------- WIFI / CAMERA ----------
-const char* WIFI_SSID = "VOTRE_WIFI";
-const char* WIFI_PASSWORD = "VOTRE_MOT_DE_PASSE";
-const char* CAMERA_DECISION_URL = "http://192.168.1.50/decision";
+const char* WIFI_SSID="VOTRE_WIFI";
+const char* WIFI_PASSWORD="VOTRE_MOT_DE_PASSE";
+const char* CAMERA_DECISION_URL="http://192.168.1.50/decision";
 
-// ---------- BROCHAGE ESP32 DEVKIT V1 ----------
-constexpr uint8_t PIN_PIR = 27;
-constexpr uint8_t PIN_TRIG = 25;
-constexpr uint8_t PIN_ECHO = 26;       // Diviseur 5V -> 3,3V obligatoire en réel
-constexpr uint8_t PIN_SERVO_COUVERCLE = 18;
-constexpr uint8_t PIN_SERVO_TRIEUR = 19;
-constexpr uint8_t PIN_HX711_DOUT = 32;
-constexpr uint8_t PIN_HX711_SCK = 33;
-constexpr uint8_t PIN_LED_OK = 2;
-constexpr uint8_t PIN_LED_REFUS = 4;
-constexpr uint8_t PIN_BUZZER = 14;
-constexpr uint8_t PIN_OLED_SDA = 21;
-constexpr uint8_t PIN_OLED_SCL = 22;
+constexpr uint8_t PIR=27, TRIG=25, ECHO=26;
+constexpr uint8_t SERVO_ORGANIC=18, SERVO_RECYCLABLE=19, SERVO_RESIDUAL=23;
+constexpr uint8_t HX_DT=32, HX_SCK=33, LED_OK=2, LED_ERROR=4, BUZZER=14;
+constexpr float MAX_DISTANCE_CM=18.0f, MIN_CONFIDENCE=0.80f, SCALE_FACTOR=420.0f;
+constexpr int CLOSED=0, OPEN=85;
+constexpr unsigned long OPEN_MS=1800, GUARD_MS=2500;
 
-// ---------- REGLAGES MECANIQUES ----------
-constexpr float DISTANCE_OBJET_CM = 18.0f;
-constexpr int COUVERCLE_FERME = 0;
-constexpr int COUVERCLE_OUVERT = 85;
-constexpr int TRIEUR_ATTENTE = 90;
-constexpr int TRIEUR_COMPARTIMENT_PLASTIQUE = 35;
-constexpr unsigned long TEMPS_OUVERTURE_MS = 2200;
-constexpr unsigned long ANTI_REPETITION_MS = 3500;
-constexpr unsigned long DELAI_DECISION_CAMERA_MS = 5000;
+Adafruit_SSD1306 oled(128,64,&Wire,-1);
+HX711 scale;
+Servo servoOrganic, servoRecyclable, servoResidual;
+bool oledOK=false, scaleOK=false, busy=false;
+unsigned long lastCycle=0;
 
-// Facteur provisoire : calibrer avec une masse connue sur le vrai montage.
-constexpr float FACTEUR_CALIBRATION = 420.0f;
-
-Adafruit_SSD1306 oled(128, 64, &Wire, -1);
-HX711 balance;
-Servo servoCouvercle;
-Servo servoTrieur;
-
-unsigned long dernierCycle = 0;
-bool ecranDisponible = false;
-bool balanceDisponible = false;
-
-enum Etat { ATTENTE, PRESENCE, OBJET, ANALYSE, ACCEPTE, REFUSE, PANNE };
-Etat etat = ATTENTE;
-
-void afficher(const char* ligne1, const char* ligne2 = "") {
-  if (!ecranDisponible) return;
-  oled.clearDisplay();
-  oled.setTextSize(1);
-  oled.setTextColor(SSD1306_WHITE);
-  oled.setCursor(0, 8);
-  oled.println("PLASTIC-BOT WOURILAB");
-  oled.drawLine(0, 20, 127, 20, SSD1306_WHITE);
-  oled.setCursor(0, 29);
-  oled.println(ligne1);
-  oled.setCursor(0, 44);
-  oled.println(ligne2);
+void closeAll() {
+  servoOrganic.write(CLOSED);
+  servoRecyclable.write(CLOSED);
+  servoResidual.write(CLOSED);
+}
+void screen(const char* a,const char* b="") {
+  if(!oledOK) return;
+  oled.clearDisplay(); oled.setTextSize(1); oled.setTextColor(SSD1306_WHITE);
+  oled.setCursor(0,5); oled.println("PLASTIC-BOT WOURILAB");
+  oled.drawLine(0,17,127,17,SSD1306_WHITE);
+  oled.setCursor(0,27); oled.println(a); oled.setCursor(0,43); oled.println(b);
   oled.display();
 }
-
-float mesurerDistanceCm() {
-  digitalWrite(PIN_TRIG, LOW);
-  delayMicroseconds(3);
-  digitalWrite(PIN_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_TRIG, LOW);
-  const unsigned long duree = pulseIn(PIN_ECHO, HIGH, 25000);
-  if (duree == 0) return -1.0f;
-  return duree * 0.0343f / 2.0f;
+float distanceCm() {
+  digitalWrite(TRIG,LOW); delayMicroseconds(3);
+  digitalWrite(TRIG,HIGH); delayMicroseconds(10); digitalWrite(TRIG,LOW);
+  unsigned long t=pulseIn(ECHO,HIGH,25000);
+  return t ? t*0.0343f/2.0f : -1.0f;
 }
-
-// Retourne true UNIQUEMENT si la caméra renvoie un JSON valide accepted=true.
-bool objetEstPlastique() {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("[SECURITE] Wi-Fi absent : refus.");
-    return false;
-  }
-
-  HTTPClient http;
-  http.setConnectTimeout(2000);
-  http.setTimeout(DELAI_DECISION_CAMERA_MS);
-  if (!http.begin(CAMERA_DECISION_URL)) return false;
-
-  const int codeHTTP = http.GET();
-  if (codeHTTP != HTTP_CODE_OK) {
-    Serial.printf("[CAMERA] HTTP %d : refus.\n", codeHTTP);
-    http.end();
-    return false;
-  }
-
-  const String reponse = http.getString();
-  http.end();
-
+bool getCategory(String &category) {
+  if(WiFi.status()!=WL_CONNECTED) return false;
+  HTTPClient http; http.setConnectTimeout(2000); http.setTimeout(5000);
+  if(!http.begin(CAMERA_DECISION_URL)) return false;
+  int status=http.GET();
+  if(status!=HTTP_CODE_OK) { http.end(); return false; }
+  String body=http.getString(); http.end();
   JsonDocument doc;
-  const DeserializationError erreur = deserializeJson(doc, reponse);
-  if (erreur || !doc["accepted"].is<bool>()) {
-    Serial.println("[CAMERA] JSON invalide : refus.");
-    return false;
-  }
-
-  const bool accepte = doc["accepted"].as<bool>();
-  const float confiance = doc["confidence"] | 0.0f;
-  Serial.printf("[CAMERA] accepted=%s confidence=%.2f\n",
-                accepte ? "true" : "false", confiance);
-
-  // Seuil minimal à ajuster après entraînement et validation du modèle.
-  return accepte && confiance >= 0.80f;
+  if(deserializeJson(doc,body)) return false;
+  if(!doc["category"].is<const char*>()) return false;
+  if(!doc["confidence"].is<float>() && !doc["confidence"].is<double>()) return false;
+  category=String(doc["category"].as<const char*>());
+  float confidence=doc["confidence"].as<float>();
+  return confidence>=MIN_CONFIDENCE &&
+    (category=="organic" || category=="recyclable" || category=="residual");
 }
-
-void signalerRefus(const char* raison) {
-  etat = REFUSE;
-  Serial.printf("[REFUS] %s\n", raison);
-  afficher("OBJET REFUSE", raison);
-  digitalWrite(PIN_LED_REFUS, HIGH);
-  tone(PIN_BUZZER, 650, 350);
-  delay(500);
-  digitalWrite(PIN_LED_REFUS, LOW);
-  servoCouvercle.write(COUVERCLE_FERME);
-  servoTrieur.write(TRIEUR_ATTENTE);
+void rejectObject() {
+  closeAll(); digitalWrite(LED_ERROR,HIGH); tone(BUZZER,600,350);
+  screen("DECHET NON IDENTIFIE","Reessayez");
+  delay(600); digitalWrite(LED_ERROR,LOW);
 }
+void openCategory(const String &category) {
+  closeAll();
+  if(category=="organic") {
+    screen("DECHET ORGANIQUE","Entree 1");
+    servoOrganic.write(OPEN);
+  } else if(category=="recyclable") {
+    screen("DECHET RECYCLABLE","Entree 2");
+    servoRecyclable.write(OPEN);
+  } else if(category=="residual") {
+    screen("DECHET RESIDUEL","Entree 3");
+    servoResidual.write(OPEN);
+  } else { rejectObject(); return; }
 
-void mesurerEtAfficherPoids() {
-  if (!balanceDisponible || !balance.is_ready()) {
-    afficher("PLASTIQUE ACCEPTE", "Balance indisponible");
-    Serial.println("[POIDS] HX711 indisponible.");
-    return;
-  }
-  const float poidsKg = balance.get_units(5);
-  const float poidsGrammes = poidsKg * 1000.0f;
-  char texte[24];
-  snprintf(texte, sizeof(texte), "Poids: %.0f g", poidsGrammes);
-  afficher("DEPOT ENREGISTRE", texte);
-  Serial.println(texte);
+  digitalWrite(LED_OK,HIGH); tone(BUZZER,1300,150);
+  delay(OPEN_MS); closeAll(); digitalWrite(LED_OK,LOW);
+  if(scaleOK && scale.is_ready()) {
+    char line[24]; snprintf(line,sizeof(line),"Poids total %.0f g",scale.get_units(3)*1000.0f);
+    screen("DEPOT ENREGISTRE",line); Serial.println(line);
+  } else screen("DEPOT ENREGISTRE","Cycle termine");
 }
-
-void cycleAccepte() {
-  etat = ACCEPTE;
-  Serial.println("[ACCEPTE] Plastique confirme.");
-  digitalWrite(PIN_LED_OK, HIGH);
-  tone(PIN_BUZZER, 1400, 150);
-  afficher("PLASTIQUE ACCEPTE", "Ouverture...");
-  servoCouvercle.write(COUVERCLE_OUVERT);
-  delay(700);
-  servoTrieur.write(TRIEUR_COMPARTIMENT_PLASTIQUE);
-  delay(TEMPS_OUVERTURE_MS);
-  servoTrieur.write(TRIEUR_ATTENTE);
-  servoCouvercle.write(COUVERCLE_FERME);
-  delay(500);
-  digitalWrite(PIN_LED_OK, LOW);
-  mesurerEtAfficherPoids();
-}
-
 void setup() {
   Serial.begin(115200);
-  pinMode(PIN_PIR, INPUT);
-  pinMode(PIN_TRIG, OUTPUT);
-  pinMode(PIN_ECHO, INPUT);
-  pinMode(PIN_LED_OK, OUTPUT);
-  pinMode(PIN_LED_REFUS, OUTPUT);
-  pinMode(PIN_BUZZER, OUTPUT);
-  digitalWrite(PIN_TRIG, LOW);
-  digitalWrite(PIN_LED_OK, LOW);
-  digitalWrite(PIN_LED_REFUS, LOW);
-
-  Wire.begin(PIN_OLED_SDA, PIN_OLED_SCL);
-  ecranDisponible = oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  afficher("Initialisation...", "Couvercle ferme");
-
-  servoCouvercle.setPeriodHertz(50);
-  servoTrieur.setPeriodHertz(50);
-  servoCouvercle.attach(PIN_SERVO_COUVERCLE, 500, 2400);
-  servoTrieur.attach(PIN_SERVO_TRIEUR, 500, 2400);
-  servoCouvercle.write(COUVERCLE_FERME);
-  servoTrieur.write(TRIEUR_ATTENTE);
-
-  balance.begin(PIN_HX711_DOUT, PIN_HX711_SCK);
-  balance.set_scale(FACTEUR_CALIBRATION);
-  if (balance.wait_ready_timeout(1500)) {
-    balance.tare();
-    balanceDisponible = true;
-  } else {
-    Serial.println("[AVERTISSEMENT] HX711 non detecte.");
-  }
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  const unsigned long debut = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - debut < 10000) {
-    delay(250);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.println(WiFi.status() == WL_CONNECTED
-    ? "[WIFI] Connecte." : "[WIFI] Indisponible : refus securitaire.");
-
-  afficher("Pret a recevoir", "Presentez un objet");
+  pinMode(PIR,INPUT); pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
+  pinMode(LED_OK,OUTPUT); pinMode(LED_ERROR,OUTPUT); pinMode(BUZZER,OUTPUT);
+  Wire.begin(21,22); oledOK=oled.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  servoOrganic.setPeriodHertz(50); servoRecyclable.setPeriodHertz(50); servoResidual.setPeriodHertz(50);
+  servoOrganic.attach(SERVO_ORGANIC,500,2400);
+  servoRecyclable.attach(SERVO_RECYCLABLE,500,2400);
+  servoResidual.attach(SERVO_RESIDUAL,500,2400);
+  closeAll();
+  scale.begin(HX_DT,HX_SCK); scale.set_scale(SCALE_FACTOR);
+  if(scale.wait_ready_timeout(1000)) { scale.tare(); scaleOK=true; }
+  WiFi.mode(WIFI_STA); WiFi.begin(WIFI_SSID,WIFI_PASSWORD);
+  unsigned long start=millis();
+  while(WiFi.status()!=WL_CONNECTED && millis()-start<10000) delay(250);
+  closeAll(); screen("SYSTEME PRET","Presentez un dechet");
 }
-
 void loop() {
-  // 1. Présence humaine : activation de la zone seulement, jamais d'ouverture.
-  if (digitalRead(PIN_PIR) == HIGH) {
-    if (etat == ATTENTE) {
-      etat = PRESENCE;
-      afficher("Utilisateur detecte", "Presentez un objet");
-      Serial.println("[PRESENCE] Zone active; couvercle toujours ferme.");
-    }
-  } else if (etat == PRESENCE) {
-    etat = ATTENTE;
-    afficher("En attente", "Approchez-vous");
-  }
+  // PIR = activation de l'interface seulement ; aucun servo n'est commandé ici.
+  if(digitalRead(PIR)==LOW) { screen("EN ATTENTE","Approchez-vous"); delay(100); return; }
+  screen("PRESENTEZ UN OBJET","Scan en attente");
+  float d=distanceCm();
+  if(d<=0 || d>MAX_DISTANCE_CM || millis()-lastCycle<GUARD_MS || busy) { delay(100); return; }
 
-  // 2. Sans présence humaine, aucun cycle de tri n'est lancé.
-  if (etat != PRESENCE || millis() - dernierCycle < ANTI_REPETITION_MS) {
-    delay(80);
-    return;
-  }
-
-  // 3. Détection de l'objet présenté dans la zone.
-  const float distance = mesurerDistanceCm();
-  if (distance <= 0 || distance > DISTANCE_OBJET_CM) {
-    delay(100);
-    return;
-  }
-
-  dernierCycle = millis();
-  etat = OBJET;
-  afficher("Objet detecte", "Analyse en cours...");
-  Serial.printf("[OBJET] Distance: %.1f cm\n", distance);
-
-  // 4. Classification IA distante. Toute panne ou incertitude = refus.
-  etat = ANALYSE;
-  const bool plastique = objetEstPlastique();
-
-  // 5. Seul un résultat positif et suffisamment fiable autorise l'ouverture.
-  if (plastique) cycleAccepte();
-  else signalerRefus("Non plastique / doute");
-
-  // 6. Retour à l'état sûr.
-  servoCouvercle.write(COUVERCLE_FERME);
-  servoTrieur.write(TRIEUR_ATTENTE);
-  delay(1000);
-  etat = ATTENTE;
-  afficher("En attente", "Presentez un objet");
+  busy=true; lastCycle=millis(); closeAll();
+  screen("ANALYSE EN COURS","Scanner / camera");
+  String category="";
+  if(getCategory(category)) openCategory(category);
+  else rejectObject();
+  closeAll(); delay(700); busy=false;
 }
