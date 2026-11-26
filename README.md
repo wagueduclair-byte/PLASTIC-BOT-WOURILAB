@@ -33,3 +33,11 @@ Le budget prévisionnel révisé est de **111 595 FCFA**, réserve de 10 % inclu
 - [Firmware ESP32 DevKit V1](firmware/esp32/README.md) — code complet, brochage et mise en service.
 - [Firmware ESP32-CAM](firmware/esp32-cam/README.md) — serveur HTTP de décision; modèle IA à entraîner avant activation.
 - [Simulation Wokwi complète](simulation/wokwi/README.md) — diagramme, programme et bibliothèques.
+
+## Démonstration visuelle
+- [Animation interactive du fonctionnement](simulation/demo/index.html) — ouvrir le fichier téléchargé dans un navigateur.
+- [Guide de la démonstration](simulation/demo/README.md).
+- [Écrans OLED de référence](simulation/demo/captures/ecran-oled-etapes.svg).
+- [Acceptation et refus](simulation/demo/captures/acceptation-refus.svg).
+
+**Note :** les visuels SVG sont des illustrations de référence, pas des captures d'écran réelles de Wokwi. La page HTML est une animation pédagogique, pas un enregistrement vidéo du simulateur. Les captures Wokwi authentiques doivent être prises après exécution du circuit.
