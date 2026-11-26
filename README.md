@@ -27,3 +27,9 @@ Le dépôt contient la documentation de conception et les bases logicielles. Le 
 ## Budget
 
 Le budget prévisionnel révisé est de **111 595 FCFA**, réserve de 10 % incluse, avec ESP32 DevKit V1 déjà possédé et non à racheter. Les montants doivent être confirmés par devis avant les achats.
+
+## Code et simulation
+
+- [Firmware ESP32 DevKit V1](firmware/esp32/README.md) — code complet, brochage et mise en service.
+- [Firmware ESP32-CAM](firmware/esp32-cam/README.md) — serveur HTTP de décision; modèle IA à entraîner avant activation.
+- [Simulation Wokwi complète](simulation/wokwi/README.md) — diagramme, programme et bibliothèques.
