@@ -3,299 +3,36 @@
   "author": "WOURILAB",
   "editor": "wokwi",
   "parts": [
-    {
-      "type": "board-esp32-devkit-c-v4",
-      "id": "esp",
-      "top": 20,
-      "left": 330,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-pir-motion-sensor",
-      "id": "pir",
-      "top": -130,
-      "left": 30,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-hc-sr04",
-      "id": "sonar",
-      "top": 60,
-      "left": 30,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-servo",
-      "id": "lid",
-      "top": 270,
-      "left": 20,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-servo",
-      "id": "sorter",
-      "top": 390,
-      "left": 20,
-      "attrs": {}
-    },
-    {
-      "type": "board-ssd1306",
-      "id": "oled",
-      "top": -160,
-      "left": 600,
-      "attrs": {
-        "i2cAddress": "0x3c"
-      }
-    },
-    {
-      "type": "wokwi-hx711",
-      "id": "hx",
-      "top": 200,
-      "left": 620,
-      "attrs": {
-        "type": "5kg"
-      }
-    },
-    {
-      "type": "wokwi-pushbutton",
-      "id": "ai",
-      "top": 390,
-      "left": 620,
-      "attrs": {
-        "color": "green",
-        "label": "SIMULER PLASTIQUE"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "ok",
-      "top": -40,
-      "left": 850,
-      "attrs": {
-        "color": "green"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "rok",
-      "top": 10,
-      "left": 980,
-      "attrs": {
-        "value": "220"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "no",
-      "top": 80,
-      "left": 850,
-      "attrs": {
-        "color": "red"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "rno",
-      "top": 130,
-      "left": 980,
-      "attrs": {
-        "value": "220"
-      }
-    },
-    {
-      "type": "wokwi-buzzer",
-      "id": "buzz",
-      "top": 250,
-      "left": 850,
-      "attrs": {}
-    }
+    {"type":"board-esp32-devkit-c-v4","id":"esp","top":20,"left":330,"attrs":{}},
+    {"type":"wokwi-pir-motion-sensor","id":"pir","top":-130,"left":30,"attrs":{}},
+    {"type":"wokwi-hc-sr04","id":"sonar","top":60,"left":30,"attrs":{}},
+    {"type":"wokwi-servo","id":"organic","top":270,"left":20,"attrs":{}},
+    {"type":"wokwi-servo","id":"recyclable","top":390,"left":20,"attrs":{}},
+    {"type":"wokwi-servo","id":"residual","top":510,"left":20,"attrs":{}},
+    {"type":"board-ssd1306","id":"oled","top":-160,"left":600,"attrs":{"i2cAddress":"0x3c"}},
+    {"type":"wokwi-hx711","id":"hx","top":200,"left":620,"attrs":{"type":"5kg"}},
+    {"type":"wokwi-pushbutton","id":"btnOrganic","top":350,"left":620,"attrs":{"color":"green","label":"TEST ORGANIQUE"}},
+    {"type":"wokwi-pushbutton","id":"btnRecyclable","top":430,"left":620,"attrs":{"color":"blue","label":"TEST RECYCLABLE"}},
+    {"type":"wokwi-pushbutton","id":"btnResidual","top":510,"left":620,"attrs":{"color":"red","label":"TEST RESIDUEL"}},
+    {"type":"wokwi-led","id":"ok","top":-40,"left":850,"attrs":{"color":"green"}},
+    {"type":"wokwi-resistor","id":"rok","top":10,"left":980,"attrs":{"value":"220"}},
+    {"type":"wokwi-led","id":"no","top":80,"left":850,"attrs":{"color":"red"}},
+    {"type":"wokwi-resistor","id":"rno","top":130,"left":980,"attrs":{"value":"220"}},
+    {"type":"wokwi-buzzer","id":"buzz","top":250,"left":850,"attrs":{}}
   ],
   "connections": [
-    [
-      "esp:27",
-      "pir:OUT",
-      "green",
-      []
-    ],
-    [
-      "pir:VCC",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
-      "pir:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:25",
-      "sonar:TRIG",
-      "green",
-      []
-    ],
-    [
-      "esp:26",
-      "sonar:ECHO",
-      "blue",
-      []
-    ],
-    [
-      "sonar:VCC",
-      "esp:VIN",
-      "red",
-      []
-    ],
-    [
-      "sonar:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:18",
-      "lid:PWM",
-      "orange",
-      []
-    ],
-    [
-      "lid:V+",
-      "esp:VIN",
-      "red",
-      []
-    ],
-    [
-      "lid:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:19",
-      "sorter:PWM",
-      "orange",
-      []
-    ],
-    [
-      "sorter:V+",
-      "esp:VIN",
-      "red",
-      []
-    ],
-    [
-      "sorter:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:21",
-      "oled:SDA",
-      "green",
-      []
-    ],
-    [
-      "esp:22",
-      "oled:SCL",
-      "blue",
-      []
-    ],
-    [
-      "oled:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:32",
-      "hx:DT",
-      "green",
-      []
-    ],
-    [
-      "esp:33",
-      "hx:SCK",
-      "blue",
-      []
-    ],
-    [
-      "hx:VCC",
-      "esp:VIN",
-      "red",
-      []
-    ],
-    [
-      "hx:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:13",
-      "ai:2.l",
-      "green",
-      []
-    ],
-    [
-      "ai:1.l",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:2",
-      "ok:A",
-      "green",
-      []
-    ],
-    [
-      "ok:C",
-      "rok:1",
-      "green",
-      []
-    ],
-    [
-      "rok:2",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:4",
-      "no:A",
-      "red",
-      []
-    ],
-    [
-      "no:C",
-      "rno:1",
-      "red",
-      []
-    ],
-    [
-      "rno:2",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "esp:14",
-      "buzz:2",
-      "purple",
-      []
-    ],
-    [
-      "buzz:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "oled:VCC",
-      "esp:VIN",
-      "red",
-      []
-    ]
+    ["esp:27","pir:OUT","green",[]],["pir:VCC","esp:3V3","red",[]],["pir:GND","esp:GND.1","black",[]],
+    ["esp:25","sonar:TRIG","green",[]],["esp:26","sonar:ECHO","blue",[]],["sonar:VCC","esp:VIN","red",[]],["sonar:GND","esp:GND.1","black",[]],
+    ["esp:18","organic:PWM","orange",[]],["organic:V+","esp:VIN","red",[]],["organic:GND","esp:GND.1","black",[]],
+    ["esp:19","recyclable:PWM","orange",[]],["recyclable:V+","esp:VIN","red",[]],["recyclable:GND","esp:GND.1","black",[]],
+    ["esp:23","residual:PWM","orange",[]],["residual:V+","esp:VIN","red",[]],["residual:GND","esp:GND.1","black",[]],
+    ["esp:21","oled:SDA","green",[]],["esp:22","oled:SCL","blue",[]],["oled:GND","esp:GND.1","black",[]],["oled:VCC","esp:VIN","red",[]],
+    ["esp:32","hx:DT","green",[]],["esp:33","hx:SCK","blue",[]],["hx:VCC","esp:VIN","red",[]],["hx:GND","esp:GND.1","black",[]],
+    ["esp:13","btnOrganic:2.l","green",[]],["btnOrganic:1.l","esp:GND.1","black",[]],
+    ["esp:16","btnRecyclable:2.l","blue",[]],["btnRecyclable:1.l","esp:GND.1","black",[]],
+    ["esp:17","btnResidual:2.l","red",[]],["btnResidual:1.l","esp:GND.1","black",[]],
+    ["esp:2","ok:A","green",[]],["ok:C","rok:1","green",[]],["rok:2","esp:GND.1","black",[]],
+    ["esp:4","no:A","red",[]],["no:C","rno:1","red",[]],["rno:2","esp:GND.1","black",[]],
+    ["esp:14","buzz:2","purple",[]],["buzz:1","esp:GND.1","black",[]]
   ]
 }
