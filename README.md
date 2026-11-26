@@ -35,9 +35,13 @@ Le budget prévisionnel révisé est de **111 595 FCFA**, réserve de 10 % inclu
 - [Simulation Wokwi complète](simulation/wokwi/README.md) — diagramme, programme et bibliothèques.
 
 ## Démonstration visuelle
-- [Animation interactive du fonctionnement](simulation/demo/index.html) — ouvrir le fichier téléchargé dans un navigateur.
-- [Guide de la démonstration](simulation/demo/README.md).
+
+- **[Ouvrir la démonstration interactive en ligne](https://wagueduclair-byte.github.io/PLASTIC-BOT-WOURILAB/)** — site web animé avec couvercle, trappe, détection, décision et écran OLED simulés.
+- [Code source de la démonstration](site/index.html).
+- [Animation HTML d'origine](simulation/demo/index.html).
 - [Écrans OLED de référence](simulation/demo/captures/ecran-oled-etapes.svg).
 - [Acceptation et refus](simulation/demo/captures/acceptation-refus.svg).
 
-**Note :** les visuels SVG sont des illustrations de référence, pas des captures d'écran réelles de Wokwi. La page HTML est une animation pédagogique, pas un enregistrement vidéo du simulateur. Les captures Wokwi authentiques doivent être prises après exécution du circuit.
+Le déploiement du site est automatisé par GitHub Actions. **À faire une seule fois dans GitHub :** ouvrir *Settings → Pages*, puis choisir **GitHub Actions** comme source de publication. Le lien ci-dessus sera accessible après la fin du premier déploiement.
+
+**Important :** cette page est une démonstration visuelle interactive, pas une capture vidéo réelle de Wokwi. Le circuit Wokwi et le modèle IA doivent encore être exécutés et validés séparément.
